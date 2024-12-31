@@ -27,7 +27,11 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'pagepull.vercel.app']
+ALLOWED_HOSTS = [
+    'localhost',
+    'pagepull.vercel.app',
+    'pagepull-backend-mwzca454r-2209.vercel.app',
+]
 
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
