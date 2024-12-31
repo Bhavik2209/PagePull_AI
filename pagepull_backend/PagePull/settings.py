@@ -49,10 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-)
+
 
 SITE_ID = 1
 
@@ -89,8 +86,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware', 
-    "allauth.account.middleware.AccountMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     
    
@@ -104,9 +99,7 @@ CORS_ALLOWED_ORIGINS = [
   # For development only
 CORS_ALLOW_CREDENTIALS = True
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
+
 # CORS_ALLOWED_ORIGINS = [
 #     'http://localhost:8000',  # Django local server
 #     'http://127.0.0.1:8000',
