@@ -1,0 +1,7 @@
+django
+google-generativeai
+selenium
+beautifulsoup4
+groq
+python-dotenv
+gunicorn
