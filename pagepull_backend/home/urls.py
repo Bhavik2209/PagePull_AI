@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
-
+from django.http import HttpResponse
 urlpatterns = [
+    path('', lambda request: HttpResponse(status=200)),
     path('get_dom_data/',views.get_dom_data,name='get_dom_data'),
     path('scrape_data/',views.get_generated_data,name='get_generated_data'),
 ]
