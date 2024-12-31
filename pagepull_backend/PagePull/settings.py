@@ -30,8 +30,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     'pagepull.vercel.app',
-    'pagepull-backend-mwzca454r-2209.vercel.app',
     'pagepull-backend.vercel.app',
+    '*.vercel.app',  # Wildcard for any subdomain of vercel.app
 ]
 
 
