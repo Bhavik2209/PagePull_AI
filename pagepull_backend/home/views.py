@@ -1,9 +1,8 @@
 import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model
 import json
-from .firebase_auth import verify_firebase_token
 from .scrape import (
     scrape_website_data,
     split_dom_content,
