@@ -5,3 +5,4 @@ beautifulsoup4
 groq
 python-dotenv
 gunicorn
+django-cors-headers

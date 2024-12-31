@@ -102,8 +102,10 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://pagepull.vercel.app',
+    'https://pagepull.vercel.app',
+    'http://localhost:8000',  # For local development
 ]
+
   # For development only
 CORS_ALLOW_CREDENTIALS = True
 
@@ -116,7 +118,11 @@ AUTHENTICATION_BACKENDS = [
 #     'http://127.0.0.1:5500',
 # ]
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5500', 'http://localhost:5500']
+CSRF_TRUSTED_ORIGINS = [
+    'https://pagepull.vercel.app',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+]
 
 ROOT_URLCONF = 'PagePull.urls'
 
