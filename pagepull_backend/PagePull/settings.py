@@ -27,17 +27,11 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    'localhost',
-    'pagepull.vercel.app',
-    'pagepull-backend.vercel.app',
-    '*.vercel.app',  # Wildcard for any subdomain of vercel.app
-]
+ALLOWED_HOSTS = ['.vercel.app','now.sh','127.0.0.1','localhost']
 
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_SECURE = True  # Use only with HTTPS
-SESSION_COOKIE_HTTPONLY = True
+
 SESSION_COOKIE_SAMESITE = 'Lax'
 
 
