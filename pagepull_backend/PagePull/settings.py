@@ -91,8 +91,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'https://pagepull.vercel.app',
-    'http://localhost:8000',  # For local development
+    'https://pagepull.vercel.app',  # For local development
 ]
 
   # For development only
