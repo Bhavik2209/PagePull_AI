@@ -11,7 +11,7 @@ const handleApiError = (error: any): never => {
 // Fetch DOM data
 export async function fetchDOMData(url: string): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/${API_ENDPOINTS.DOM_DATA}`, {
+    const response = await fetch(`${API_BASE_URL}/${API_ENDPOINTS.DOM_DATA}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export async function fetchDOMData(url: string): Promise<ApiResponse> {
 // Fetch Generated data
 export async function fetchGeneratedData(prompt: string): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/${API_ENDPOINTS.GENERATED_DATA}`, {
+    const response = await fetch(`${API_BASE_URL}/${API_ENDPOINTS.GENERATED_DATA}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
