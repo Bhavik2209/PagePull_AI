@@ -1,14 +1,24 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "PagePull/wsgi.py",
-        "use": "@vercel/python",
-        "config": { "maxLambdaSize": "15mb" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "PagePull/wsgi.py",
+      "use": "@vercel/python",
+      "config": { 
+        "maxLambdaSize": "15mb",
+        "maxDuration": 30
       }
-    ],
-    "routes": [
-      { "src": "/(.*)", "dest": "PagePull/wsgi.py" }
-    ]
+    }
+  ],
+  "routes": [
+    { 
+      "src": "/(.*)", 
+      "dest": "PagePull/wsgi.py" 
+    }
+  ],
+  "functions": {
+    "PagePull/wsgi.py": {
+      "maxDuration": 30
+    }
   }
-  
+}
