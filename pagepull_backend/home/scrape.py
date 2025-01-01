@@ -2,32 +2,49 @@
 from selenium.webdriver import Remote, ChromeOptions
 from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
 from bs4 import BeautifulSoup
-import re
 import os
 from dotenv import load_dotenv
 
-
+# Load credentials from .env
 load_dotenv()
 
 SBR_WEBDRIVER = os.getenv('SBR_WEBDRIVER')
-
+SELENIUM_USER = os.getenv('SELENIUM_USER')
+SELENIUM_PASS = os.getenv('SELENIUM_PASS')
 
 def scrape_website_data(website):
-    print('Connecting to Scraping Browser...')
-    sbr_connection = ChromiumRemoteConnection(SBR_WEBDRIVER, 'goog', 'chrome')
+    print('Connecting to Bright Data Scraping Browser...')
+    
+    # Add Bright Data credentials to the connection URL
+    if SELENIUM_USER and SELENIUM_PASS:
+        connection_url = f"https://{SELENIUM_USER}:{SELENIUM_PASS}@{SBR_WEBDRIVER.lstrip('https://')}"
+    else:
+        raise ValueError("Bright Data credentials are missing. Check your .env file.")
+
+    sbr_connection = ChromiumRemoteConnection(connection_url, 'goog', 'chrome')
+    
+    # Establish a remote connection
     with Remote(sbr_connection, options=ChromeOptions()) as driver:
         print('Connected! Navigating to website...')
         driver.get(website)
-        # CAPTCHA handling: If you're expecting a CAPTCHA on the target page, use the following code snippet to check the status of Scraping Browser's automatic CAPTCHA solver
-        print('Waiting captcha to solve...')
-        solve_res = driver.execute('executeCdpCommand', {
-            'cmd': 'Captcha.waitForSolve',
-            'params': {'detectTimeout': 10000},
-        })
-        print('Captcha solve status:', solve_res['value']['status'])
+
+        # Optional: Handle CAPTCHA if needed
+        print('Waiting for CAPTCHA to solve...')
+        try:
+            solve_res = driver.execute('executeCdpCommand', {
+                'cmd': 'Captcha.waitForSolve',
+                'params': {'detectTimeout': 10000},
+            })
+            print('CAPTCHA solve status:', solve_res.get('value', {}).get('status', 'unknown'))
+        except Exception as e:
+            print('CAPTCHA solving not supported or failed:', e)
+
         print('Navigated! Scraping page content...')
         html = driver.page_source
         return html
+
+# Other functions remain unchanged
+
 
 def extract_body_content(html_content):
     soup = BeautifulSoup(html_content,'html.parser')
