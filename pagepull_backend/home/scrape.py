@@ -3,81 +3,86 @@ from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnecti
 from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
+import logging
 
-# Load credentials from .env
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Load environment variables
 load_dotenv()
 
-SBR_WEBDRIVER = os.getenv('SBR_WEBDRIVER')
-SELENIUM_USER = os.getenv('SELENIUM_USER')
-SELENIUM_PASS = os.getenv('SELENIUM_PASS')
-
 def scrape_website_data(website):
-    print('Connecting to Bright Data Scraping Browser...')
-    
-    # Add Bright Data credentials to the connection URL
-    if SELENIUM_USER and SELENIUM_PASS and SBR_WEBDRIVER:
-        # Construct the full URL
-        connection_url = f"https://{SELENIUM_USER}:{SELENIUM_PASS}{SBR_WEBDRIVER}"
-    else:
-        raise ValueError("Bright Data credentials or SBR_WEBDRIVER are missing. Check your .env file.")
+    try:
+        logger.info('Connecting to Scraping Browser...')
+        
+        # Get the webdriver URL from environment variables
+        sbr_webdriver = os.getenv('SBR_WEBDRIVER')
+        if not sbr_webdriver:
+            raise ValueError("SBR_WEBDRIVER environment variable is not set")
 
-    print("Connecting with URL:", connection_url)  # Debug: Verify the constructed URL
-
-    sbr_connection = ChromiumRemoteConnection(connection_url, 'goog', 'chrome')
-    
-    # Establish a remote connection
-    with Remote(sbr_connection, options=ChromeOptions()) as driver:
-        print('Connected! Navigating to website...')
-        driver.get(website)
-
-        # Optional: Handle CAPTCHA if needed
-        print('Waiting for CAPTCHA to solve...')
-        try:
-            solve_res = driver.execute('executeCdpCommand', {
-                'cmd': 'Captcha.waitForSolve',
-                'params': {'detectTimeout': 10000},
-            })
-            print('CAPTCHA solve status:', solve_res.get('value', {}).get('status', 'unknown'))
-        except Exception as e:
-            print('CAPTCHA solving not supported or failed:', e)
-
-        print('Navigated! Scraping page content...')
-        html = driver.page_source
-        return html
-
-# Test function if needed
-# html_content = scrape_website_data("https://example.com")
-# print(html_content)
-
-
-# Other functions remain unchanged
-
+        # Create connection and options
+        options = ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        
+        sbr_connection = ChromiumRemoteConnection(sbr_webdriver, 'goog', 'chrome')
+        
+        with Remote(sbr_connection, options=options) as driver:
+            logger.info('Connected! Navigating to website...')
+            driver.get(website)
+            
+            # CAPTCHA handling
+            logger.info('Waiting for captcha to solve...')
+            try:
+                solve_res = driver.execute('executeCdpCommand', {
+                    'cmd': 'Captcha.waitForSolve',
+                    'params': {'detectTimeout': 10000},
+                })
+                logger.info(f'Captcha solve status: {solve_res["value"]["status"]}')
+            except Exception as e:
+                logger.warning(f'Captcha handling error: {str(e)}')
+            
+            logger.info('Scraping page content...')
+            html = driver.page_source
+            return html
+            
+    except Exception as e:
+        logger.error(f'Error during scraping: {str(e)}')
+        raise
 
 def extract_body_content(html_content):
-    soup = BeautifulSoup(html_content,'html.parser')
-    body_content = soup.body
-    if body_content:
-        return str(body_content)
-    return ""
+    try:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        body_content = soup.body
+        return str(body_content) if body_content else ""
+    except Exception as e:
+        logger.error(f'Error extracting body content: {str(e)}')
+        return ""
 
 def clean_body_content(body_content):
-    soup = BeautifulSoup(body_content, "html.parser")
-
-    for script_or_style in soup(["script", "style"]):
-        script_or_style.extract()
-
-    # Get text or further process the content
-    cleaned_content = soup.get_text(separator="\n")
-    cleaned_content = "\n".join(
-        line.strip() for line in cleaned_content.splitlines() if line.strip()
-    )
-
-    return cleaned_content
-
-
+    try:
+        soup = BeautifulSoup(body_content, "html.parser")
+        
+        # Remove script and style elements
+        for script_or_style in soup(["script", "style"]):
+            script_or_style.extract()
+        
+        # Clean and format text
+        cleaned_content = soup.get_text(separator="\n")
+        cleaned_content = "\n".join(
+            line.strip() for line in cleaned_content.splitlines() if line.strip()
+        )
+        
+        return cleaned_content
+    except Exception as e:
+        logger.error(f'Error cleaning body content: {str(e)}')
+        return ""
 
 def split_dom_content(dom_content, max_length=6000):
-    split_content = []
-    for i in range(0, len(dom_content), max_length):
-        split_content.append(dom_content[i:i + max_length])
-    return split_content
+    try:
+        return [dom_content[i:i + max_length] 
+                for i in range(0, len(dom_content), max_length)]
+    except Exception as e:
+        logger.error(f'Error splitting content: {str(e)}')
+        return []
