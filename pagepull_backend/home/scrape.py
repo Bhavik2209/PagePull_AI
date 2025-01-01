@@ -79,7 +79,7 @@ def scrape_website_data(website):
 
 def extract_body_content(html_content):
     try:
-        soup = BeautifulSoup(html_content, 'lxml')  # Using lxml for faster parsing
+        soup = BeautifulSoup(html_content, 'html.parser')  # Using default parser instead of lxml
         body_content = soup.body
         return str(body_content) if body_content else ""
     except Exception as e:
@@ -88,7 +88,7 @@ def extract_body_content(html_content):
 
 def clean_body_content(body_content):
     try:
-        soup = BeautifulSoup(body_content, "lxml")
+        soup = BeautifulSoup(body_content, "html.parser")  # Using default parser instead of lxml
         
         # Remove script and style elements
         for element in soup(["script", "style", "meta", "link"]):

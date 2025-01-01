@@ -6,3 +6,5 @@ groq
 python-dotenv
 gunicorn
 django-cors-headers
+requests
+lxml
