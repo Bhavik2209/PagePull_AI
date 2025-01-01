@@ -15,10 +15,5 @@
       "src": "/(.*)", 
       "dest": "PagePull/wsgi.py" 
     }
-  ],
-  "functions": {
-    "PagePull/wsgi.py": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
