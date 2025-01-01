@@ -1,4 +1,3 @@
-
 from selenium.webdriver import Remote, ChromeOptions
 from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
 from bs4 import BeautifulSoup
@@ -16,10 +15,13 @@ def scrape_website_data(website):
     print('Connecting to Bright Data Scraping Browser...')
     
     # Add Bright Data credentials to the connection URL
-    if SELENIUM_USER and SELENIUM_PASS:
-        connection_url = f"https://{SELENIUM_USER}:{SELENIUM_PASS}@{SBR_WEBDRIVER.lstrip('https://')}"
+    if SELENIUM_USER and SELENIUM_PASS and SBR_WEBDRIVER:
+        # Construct the full URL
+        connection_url = f"https://{SELENIUM_USER}:{SELENIUM_PASS}{SBR_WEBDRIVER}"
     else:
-        raise ValueError("Bright Data credentials are missing. Check your .env file.")
+        raise ValueError("Bright Data credentials or SBR_WEBDRIVER are missing. Check your .env file.")
+
+    print("Connecting with URL:", connection_url)  # Debug: Verify the constructed URL
 
     sbr_connection = ChromiumRemoteConnection(connection_url, 'goog', 'chrome')
     
@@ -42,6 +44,11 @@ def scrape_website_data(website):
         print('Navigated! Scraping page content...')
         html = driver.page_source
         return html
+
+# Test function if needed
+# html_content = scrape_website_data("https://example.com")
+# print(html_content)
+
 
 # Other functions remain unchanged
 
