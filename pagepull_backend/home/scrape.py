@@ -1,59 +1,55 @@
-
 from selenium.webdriver import Remote, ChromeOptions
-from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
+from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection, ClientConfig
 from bs4 import BeautifulSoup
-import re
 import os
 from dotenv import load_dotenv
 
-
+# Load environment variables
 load_dotenv()
-
-SBR_WEBDRIVER = os.getenv('SBR_WEBDRIVER')
-
 
 def scrape_website_data(website):
     print('Connecting to Scraping Browser...')
-    sbr_connection = ChromiumRemoteConnection(SBR_WEBDRIVER, 'goog', 'chrome')
+    
+    # Secure ClientConfig setup
+    client_config = ClientConfig(
+        username=os.getenv("SELENIUM_USER"),
+        password=os.getenv("SELENIUM_PASS"),
+        keep_alive=True  # Optional: Use persistent connections if needed
+    )
+    
+    # Establish connection using WebDriver URL from environment
+    sbr_connection = ChromiumRemoteConnection(os.getenv('SBR_WEBDRIVER'), client_config)
+    
     with Remote(sbr_connection, options=ChromeOptions()) as driver:
         print('Connected! Navigating to website...')
         driver.get(website)
-        # CAPTCHA handling: If you're expecting a CAPTCHA on the target page, use the following code snippet to check the status of Scraping Browser's automatic CAPTCHA solver
-        print('Waiting captcha to solve...')
+        
+        # CAPTCHA handling (if applicable)
+        print('Waiting for CAPTCHA to solve...')
         solve_res = driver.execute('executeCdpCommand', {
             'cmd': 'Captcha.waitForSolve',
             'params': {'detectTimeout': 10000},
         })
         print('Captcha solve status:', solve_res['value']['status'])
+        
+        # Scrape content
         print('Navigated! Scraping page content...')
         html = driver.page_source
         return html
 
 def extract_body_content(html_content):
-    soup = BeautifulSoup(html_content,'html.parser')
+    soup = BeautifulSoup(html_content, 'html.parser')
     body_content = soup.body
-    if body_content:
-        return str(body_content)
-    return ""
+    return str(body_content) if body_content else ""
 
 def clean_body_content(body_content):
     soup = BeautifulSoup(body_content, "html.parser")
-
     for script_or_style in soup(["script", "style"]):
         script_or_style.extract()
 
-    # Get text or further process the content
+    # Get and clean text
     cleaned_content = soup.get_text(separator="\n")
-    cleaned_content = "\n".join(
-        line.strip() for line in cleaned_content.splitlines() if line.strip()
-    )
-
-    return cleaned_content
-
-
+    return "\n".join(line.strip() for line in cleaned_content.splitlines() if line.strip())
 
 def split_dom_content(dom_content, max_length=6000):
-    split_content = []
-    for i in range(0, len(dom_content), max_length):
-        split_content.append(dom_content[i:i + max_length])
-    return split_content
+    return [dom_content[i:i + max_length] for i in range(0, len(dom_content), max_length)]
