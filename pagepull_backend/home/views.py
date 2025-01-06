@@ -17,31 +17,25 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def get_dom_data(request):
     if request.method == 'POST':
-        logger.debug("get_dom_data view called")
         try:
             data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
-
-        url = data.get('url')
-        if not url:
-            return JsonResponse({'error': 'No URL provided'}, status=400)
-
-        try:
+            url = data.get('url')
+            if not url:
+                return JsonResponse({'error': 'No URL provided'}, status=400)
+            
+            logger.info(f"Scraping URL: {url}")
             result = scrape_website_data(url)
             body_content = extract_body_content(result)
             cleaned_content = clean_body_content(body_content)
+
+            if not cleaned_content:
+                return JsonResponse({'error': 'No data found or failed to clean content'}, status=400)
+
+            request.session['DOM_content'] = cleaned_content
+            return JsonResponse({'DOM_content': cleaned_content})
         except Exception as e:
             logger.error(f"Error scraping website: {str(e)}")
             return JsonResponse({'error': f'Error scraping website: {str(e)}'}, status=500)
-
-        if not cleaned_content:
-            return JsonResponse({'error': 'No data found or failed to clean content'}, status=400)
-
-        request.session['DOM_content'] = cleaned_content
-        print(cleaned_content)
-        return JsonResponse({'DOM_content': cleaned_content})
-
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 @csrf_exempt

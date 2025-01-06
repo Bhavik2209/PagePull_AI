@@ -30,44 +30,27 @@ def setup_driver():
     options.page_load_strategy = 'eager'  # Don't wait for all resources to load
     
     try:
-        sbr_webdriver = os.getenv('SBR_WEBDRIVER')
-        if not sbr_webdriver:
+        webdriver_url = os.getenv('SBR_WEBDRIVER')
+        if not webdriver_url:
             raise ValueError("SBR_WEBDRIVER environment variable is not set")
-            
-        sbr_connection = ChromiumRemoteConnection(
-            sbr_webdriver, 
-            'goog', 
-            'chrome',
-            keep_alive=True
-        )
-        return Remote(sbr_connection, options=options)
+
+        return Remote(command_executor=webdriver_url, options=options)
     except Exception as e:
         logger.error(f"Driver setup failed: {str(e)}")
         raise
 
-def scrape_with_timeout(website, timeout=5):
+def scrape_with_timeout(website, timeout=15):
     def _scrape():
         driver = setup_driver()
         try:
             driver.set_page_load_timeout(timeout)
             driver.get(website)
             
-            # Reduced wait time
-            WebDriverWait(driver, timeout=3).until(
+            WebDriverWait(driver, timeout).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
             
-            # Simplified CAPTCHA check
-            try:
-                driver.execute('executeCdpCommand', {
-                    'cmd': 'Captcha.waitForSolve',
-                    'params': {'detectTimeout': 2000}
-                })
-            except Exception:
-                pass
-            
             return driver.page_source
-            
         finally:
             driver.quit()
     
