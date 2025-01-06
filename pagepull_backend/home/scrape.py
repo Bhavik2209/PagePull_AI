@@ -10,15 +10,24 @@ load_dotenv()
 def scrape_website_data(website):
     print('Connecting to Scraping Browser...')
     
+    # Extract WebDriver details from the environment variable
+    webdriver_url = os.getenv("SBR_WEBDRIVER")
+    if not webdriver_url:
+        raise ValueError("SBR_WEBDRIVER environment variable is not set.")
+    
+    # Extract the remote server address (e.g., hostname:port/path)
+    remote_server_addr = webdriver_url.split('@')[-1].split(':')[0]
+
     # Secure ClientConfig setup
     client_config = ClientConfig(
+        remote_server_addr=remote_server_addr,
         username=os.getenv("SELENIUM_USER"),
         password=os.getenv("SELENIUM_PASS"),
         keep_alive=True  # Optional: Use persistent connections if needed
     )
     
     # Establish connection using WebDriver URL from environment
-    sbr_connection = ChromiumRemoteConnection(os.getenv('SBR_WEBDRIVER'), client_config)
+    sbr_connection = ChromiumRemoteConnection(webdriver_url, client_config)
     
     with Remote(sbr_connection, options=ChromeOptions()) as driver:
         print('Connected! Navigating to website...')
