@@ -29,46 +29,51 @@ def setup_driver():
     options.add_argument('--window-size=1920,1080')
     options.page_load_strategy = 'eager'  # Don't wait for all resources to load
     
-    sbr_webdriver = os.getenv('SBR_WEBDRIVER')
-    if not sbr_webdriver:
-        raise ValueError("SBR_WEBDRIVER environment variable is not set")
-        
-    sbr_connection = ChromiumRemoteConnection(sbr_webdriver, 'goog', 'chrome')
-    return Remote(sbr_connection, options=options)
+    try:
+        sbr_webdriver = os.getenv('SBR_WEBDRIVER')
+        if not sbr_webdriver:
+            raise ValueError("SBR_WEBDRIVER environment variable is not set")
+            
+        sbr_connection = ChromiumRemoteConnection(
+            sbr_webdriver, 
+            'goog', 
+            'chrome',
+            keep_alive=True
+        )
+        return Remote(sbr_connection, options=options)
+    except Exception as e:
+        logger.error(f"Driver setup failed: {str(e)}")
+        raise
 
-def scrape_with_timeout(website, timeout=8):
+def scrape_with_timeout(website, timeout=5):
     def _scrape():
         driver = setup_driver()
         try:
-            logger.info('Connected! Navigating to website...')
             driver.set_page_load_timeout(timeout)
             driver.get(website)
             
-            # Wait for body to be present
-            WebDriverWait(driver, timeout=5).until(
+            # Reduced wait time
+            WebDriverWait(driver, timeout=3).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
             
-            # Quick CAPTCHA check
+            # Simplified CAPTCHA check
             try:
-                solve_res = driver.execute('executeCdpCommand', {
+                driver.execute('executeCdpCommand', {
                     'cmd': 'Captcha.waitForSolve',
-                    'params': {'detectTimeout': 3000},  # Reduced timeout
+                    'params': {'detectTimeout': 2000}
                 })
-                logger.info(f'Captcha solve status: {solve_res["value"]["status"]}')
-            except Exception as e:
-                logger.warning(f'Captcha handling skipped: {str(e)}')
+            except Exception:
+                pass
             
             return driver.page_source
             
         finally:
             driver.quit()
     
-    # Execute with timeout
     with ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(_scrape)
         try:
-            return future.result(timeout=timeout)
+            return executor.submit(_scrape).result(timeout=timeout)
         except TimeoutError:
             logger.error(f'Scraping timed out after {timeout} seconds')
             raise
